@@ -1,6 +1,13 @@
 import { FC, useEffect, useState } from 'react';
 import styled from 'styled-components';
 
+const MEDIA_MOBILE = 360;
+const MEDIA_DESKTOP = 361;
+
+interface ISHole {
+  top: number;
+}
+
 const SOuterContainer = styled.div`
   display: flex;
   height: 300px;
@@ -33,25 +40,39 @@ const SHeader = styled.div`
   letter-spacing: 0.0075em;
   font-weight: 500;
   padding-left: 4px;
+
+  @media (max-width: ${MEDIA_MOBILE}px) {
+    margin-top: 14px;
+  }
+  @media (min-width: ${MEDIA_DESKTOP}px) {
+    margin-top: 12px;
+  }
 `;
 const SContent = styled.div`
-  margin-top: 26px;
   padding: 0px 12px 0 4px;
   line-height: 1.63;
+
+  @media (max-width: ${MEDIA_MOBILE}px) {
+    margin-top: 26px;
+  }
+  @media (min-width: ${MEDIA_DESKTOP}px) {
+    margin-top: 26px;
+  }
 `;
 const SMargin = styled.div`
   border-right: 2px solid rgba(255, 194, 204, 0.4);
   width: 50px;
   height: 300px;
 `;
-const SHole = styled.div`
+const SHole = styled.div<ISHole>`
   width: 20px;
   height: 20px;
   background: #7a1141;
   border-radius: 50%;
   position: absolute;
-  top: 54px;
   left: 12px;
+
+  top: ${({ top }) => top}px;
 `;
 
 interface IQuizData {
@@ -75,8 +96,8 @@ const QuizQuestion: FC<IQuizData> = ({ content }) => {
   return (
     <SOuterContainer>
       <SMargin />
-      <SHole />
-      <SHole />
+      <SHole top={54} />
+      <SHole top={240} />
       <SContainer onClick={onClickHandler}>
         <SHeader>{isQuestion ? 'Question:' : 'Answer:'}</SHeader>
         <SContent>{isQuestion ? content.question : content.answer}</SContent>
