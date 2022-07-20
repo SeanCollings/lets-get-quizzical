@@ -6,6 +6,7 @@ const MEDIA_DESKTOP = 421;
 
 interface ISHole {
   top: number;
+  isQuestion: boolean;
 }
 
 const SOuterContainer = styled.div`
@@ -48,21 +49,39 @@ const SHeader = styled.div`
     margin-top: 12px;
   }
 `;
+const SHeaderWrapper = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
+const SHeaderFaint = styled(SHeader)`
+  padding-right: 4px;
+  margin-right: 50px;
+  transform: scale(-1, 1);
+  opacity: 0.1;
+`;
 const SContent = styled.div`
   padding: 0px 12px 0 4px;
   line-height: 1.63;
+  z-index: 1;
 
   @media (max-width: ${MEDIA_MOBILE}px) {
-    margin-top: 26px;
+    margin-top: 28px;
   }
   @media (min-width: ${MEDIA_DESKTOP}px) {
     margin-top: 26px;
   }
 `;
 const SMargin = styled.div`
-  border-right: 2px solid rgba(255, 194, 204, 0.4);
+  border-right: 1px solid #ffc2cc;
   width: 50px;
   height: 300px;
+`;
+const SMarginFaint = styled.div`
+  height: 300px;
+  border-left: 1px solid rgb(255 194 204 / 0.4);
+  width: 50px;
+  position: absolute;
+  right: 0;
 `;
 const SHole = styled.div<ISHole>`
   width: 20px;
@@ -70,7 +89,7 @@ const SHole = styled.div<ISHole>`
   background: #7a1141;
   border-radius: 50%;
   position: absolute;
-  left: 12px;
+  ${({ isQuestion }) => (isQuestion ? 'left: 12px' : 'right: 12px')};
 
   top: ${({ top }) => top}px;
 `;
@@ -96,12 +115,16 @@ const QuizQuestion: FC<IQuizData> = ({ content }) => {
   return (
     <SOuterContainer>
       <SMargin />
-      <SHole top={54} />
-      <SHole top={240} />
+      <SHole top={54} isQuestion={isQuestion} />
+      <SHole top={240} isQuestion={isQuestion} />
       <SContainer onClick={onClickHandler}>
-        <SHeader>{isQuestion ? 'Question:' : 'Answer:'}</SHeader>
+        <SHeaderWrapper>
+          <SHeader>{isQuestion ? 'Question:' : 'Answer:'}</SHeader>
+          <SHeaderFaint>{!isQuestion ? 'Question:' : 'Answer:'}</SHeaderFaint>
+        </SHeaderWrapper>
         <SContent>{isQuestion ? content.question : content.answer}</SContent>
       </SContainer>
+      <SMarginFaint />
     </SOuterContainer>
   );
 };
