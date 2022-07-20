@@ -1,8 +1,8 @@
 import { FC, useEffect, useState } from 'react';
 import styled from 'styled-components';
 
-const MEDIA_MOBILE = 360;
-const MEDIA_DESKTOP = 361;
+const MEDIA_MOBILE = 420;
+const MEDIA_DESKTOP = 421;
 
 interface ISHole {
   top: number;
