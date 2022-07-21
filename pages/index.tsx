@@ -6,22 +6,28 @@ import { useState } from 'react';
 import QuizContent from '../components/quiz-content';
 import { connectToDatabase } from '../util/mongodb';
 
-interface IIndexProps {
-  isConnected: boolean;
+const WIDTH = 160;
+const HEIGHT = 70;
+
+interface ISButtonContainer {
+  isFetching: boolean;
 }
-interface IQuizData {
-  question: string;
-  answer: string;
+interface ISStartButton {
+  isDisabled: boolean;
 }
 
-const SStartButton = styled.button`
+const SButtonContainer = styled.div<ISButtonContainer>`
+  height: ${HEIGHT}px;
+  width: ${WIDTH}px;
+  position: relative;
+`;
+const SStartButton = styled.button<ISStartButton>`
   -webkit-tap-highlight-color: transparent;
-
   color: #721342;
-  width: 160px;
+  width: 100%;
+  height: 100%;
   border: 1px solid #581845;
   background: #fffaf0;
-  height: 70px;
   padding: 6px 8px;
   font-size: 1rem;
   font-weight: bold;
@@ -38,9 +44,39 @@ const SStartButton = styled.button`
   }
 
   :disabled {
-    opacity: 0.7;
+    color: #58184566;
   }
 `;
+const SLoaderSVG = styled.svg`
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  pointer-events: none;
+`;
+const SRect = styled.rect`
+  fill: transparent;
+  stroke-width: 4;
+  stroke: #9198e5;
+  stroke-dashoffset: -${WIDTH / 2}px;
+  animation: loader-animation 1s ease-in-out infinite;
+
+  @keyframes loader-animation {
+    0% {
+      stroke-dasharray: 0, 600px;
+    }
+    100% {
+      stroke-dasharray: 400px, 0;
+    }
+  }
+`;
+
+interface IIndexProps {
+  isConnected: boolean;
+}
+interface IQuizData {
+  question: string;
+  answer: string;
+}
 
 const Home: NextPage<IIndexProps> = ({ isConnected }) => {
   const [fetching, setFetching] = useState(false);
@@ -68,9 +104,26 @@ const Home: NextPage<IIndexProps> = ({ isConnected }) => {
       <main className={styles.main}>
         {!isConnected && <div>Not connected</div>}
         {!quizData.length && (
-          <SStartButton onClick={onStartClick} disabled={fetching}>
-            Start Quiz
-          </SStartButton>
+          <SButtonContainer isFetching={fetching}>
+            {fetching && (
+              <SLoaderSVG>
+                <SRect
+                  x="4"
+                  y="4"
+                  rx="4"
+                  width={WIDTH - 8}
+                  height={HEIGHT - 8}
+                />
+              </SLoaderSVG>
+            )}
+            <SStartButton
+              onClick={onStartClick}
+              disabled={fetching}
+              isDisabled={fetching}
+            >
+              Start Quiz
+            </SStartButton>
+          </SButtonContainer>
         )}
         {!!quizData.length && <QuizContent quizzes={quizData} />}
       </main>
