@@ -3,15 +3,44 @@ import styled from 'styled-components';
 
 const MEDIA_MOBILE = 420;
 const MEDIA_DESKTOP = 421;
+const TOP_HOLE_POSITION = 54;
+const BOTTOM_HOLE_POSITION = 240;
 
+type TCard = 'question' | 'answer';
+
+interface ISCardContainer {
+  showAnswer: boolean;
+  quickTransition: boolean;
+}
+interface ISCard {
+  type: TCard;
+}
 interface ISHole {
   top: number;
   isQuestion: boolean;
 }
 
 const SOuterContainer = styled.div`
-  display: flex;
+  perspective: 1000px;
+`;
+const SCardContainer = styled.div<ISCardContainer>`
+  margin: auto;
+  transition: transform 0.6s ease 0s;
+  min-width: 200px;
+  max-width: 500px;
   height: 300px;
+
+  position: relative;
+  transform-style: preserve-3d;
+
+  transform: ${({ showAnswer }) =>
+    showAnswer ? 'rotateY(180deg)' : 'rotateY(0deg)'};
+  transition: transform
+    ${({ quickTransition }) => (quickTransition ? '0s' : '0.6s')};
+`;
+const SCard = styled.div<ISCard>`
+  display: flex;
+  width: 100%;
   background: repeating-linear-gradient(
       #fffaf0,
       #ffffff 24px,
@@ -21,12 +50,14 @@ const SOuterContainer = styled.div`
     0px 13px;
   overflow: auto;
   filter: drop-shadow(4px 4px 6px black);
-  min-width: 200px;
-  max-width: 500px;
-  margin: auto;
-  position: relative;
+
+  position: absolute;
+  backface-visibility: hidden;
+
+  ${({ type }) => type === 'question' && `transform: rotateY(0deg)`};
+  ${({ type }) => type === 'answer' && `transform: rotateY(180deg)`};
 `;
-const SContainer = styled.div`
+const SCardContent = styled.div`
   -webkit-tap-highlight-color: transparent;
   display: flex;
   flex-direction: column;
@@ -78,7 +109,7 @@ const SMargin = styled.div`
 `;
 const SMarginFaint = styled.div`
   height: 300px;
-  border-left: 1px solid rgb(255 194 204 / 0.4);
+  border-left: 1px solid #ffc2cc66;
   width: 50px;
   position: absolute;
   right: 0;
@@ -86,12 +117,17 @@ const SMarginFaint = styled.div`
 const SHole = styled.div<ISHole>`
   width: 20px;
   height: 20px;
-  background: #7a1141;
+  background: #761241;
   border-radius: 50%;
   position: absolute;
-  ${({ isQuestion }) => (isQuestion ? 'left: 12px' : 'right: 12px')};
+  box-shadow: inset 2px 2px 6px black;
 
   top: ${({ top }) => top}px;
+  ${({ isQuestion }) => (isQuestion ? 'left: 12px' : 'right: 12px')};
+  ${({ isQuestion, top }) =>
+    !isQuestion && top === BOTTOM_HOLE_POSITION && `background: #9b1139`};
+  ${({ isQuestion, top }) =>
+    isQuestion && top === BOTTOM_HOLE_POSITION && `background: #840c3c`};
 `;
 
 interface IQuizData {
@@ -100,31 +136,55 @@ interface IQuizData {
     answer: string;
   };
 }
+interface ICard {
+  type: TCard;
+  content: string;
+}
+
+const Card: FC<ICard> = ({ type, content }) => {
+  return (
+    <SCard type={type}>
+      <SMargin />
+      <SHole top={TOP_HOLE_POSITION} isQuestion={type === 'question'} />
+      <SHole top={BOTTOM_HOLE_POSITION} isQuestion={type === 'question'} />
+      <SCardContent>
+        <SHeaderWrapper>
+          <SHeader>{type === 'question' ? 'Question:' : 'Answer:'}</SHeader>
+          <SHeaderFaint>
+            {type === 'question' ? 'Answer:' : 'Question:'}
+          </SHeaderFaint>
+        </SHeaderWrapper>
+        <SContent>{content}</SContent>
+      </SCardContent>
+      <SMarginFaint />
+    </SCard>
+  );
+};
 
 const QuizQuestion: FC<IQuizData> = ({ content }) => {
   const [isQuestion, setIsQuestion] = useState(true);
+  const [quickTransition, setQuickTransition] = useState(false);
 
   useEffect(() => {
     setIsQuestion(true);
+    setQuickTransition(true);
   }, [content]);
 
   const onClickHandler = () => {
     setIsQuestion(!isQuestion);
+    quickTransition && setQuickTransition(false);
   };
 
   return (
     <SOuterContainer>
-      <SMargin />
-      <SHole top={54} isQuestion={isQuestion} />
-      <SHole top={240} isQuestion={isQuestion} />
-      <SContainer onClick={onClickHandler}>
-        <SHeaderWrapper>
-          <SHeader>{isQuestion ? 'Question:' : 'Answer:'}</SHeader>
-          <SHeaderFaint>{!isQuestion ? 'Question:' : 'Answer:'}</SHeaderFaint>
-        </SHeaderWrapper>
-        <SContent>{isQuestion ? content.question : content.answer}</SContent>
-      </SContainer>
-      <SMarginFaint />
+      <SCardContainer
+        showAnswer={!isQuestion}
+        quickTransition={quickTransition}
+        onClick={onClickHandler}
+      >
+        <Card type="question" content={content.question} />
+        <Card type="answer" content={content.answer} />
+      </SCardContainer>
     </SOuterContainer>
   );
 };
